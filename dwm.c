@@ -61,8 +61,8 @@
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
-//#define LOG(...) {FILE *f = fopen("/tmp/dwm.log","a"); fprintf(f, ##__VA_ARGS__); fclose(f);}
-#define LOG(...)
+#define LOG(...) {FILE *f = fopen("/tmp/dwm.log","a"); fprintf(f, ##__VA_ARGS__); fclose(f);}
+//#define LOG(...)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 
@@ -2021,6 +2021,8 @@ sigchld(int unused)
 void
 spawn(const Arg *arg)
 {
+	LOG("SPAWN %s\n", ((char **)arg->v)[0]);
+	LOG("SPAWN2 %s\n", ((char **)arg->v)[1]);
 	if (arg->v == dmenucmd)
 		dmenumon[0] = '0' + selmon->num;
 	if (fork() == 0) {
@@ -2832,6 +2834,7 @@ zoom(const Arg *arg)
 	pop(c);
 }
 
+const Arg autoatartarg = SHCMD("/home/mpoturai/autostart_blocking.sh");
 int
 main(int argc, char *argv[])
 {
@@ -2852,8 +2855,8 @@ main(int argc, char *argv[])
 		die("pledge");
 #endif /* __OpenBSD__ */
 	scan();
+	spawn(&autoatartarg);
 	run();
-	system("cd ~;  ./autostart_blocking.sh");
 	cleanup();
 	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
