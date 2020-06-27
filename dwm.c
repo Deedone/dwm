@@ -941,10 +941,12 @@ drawbar(Monitor *m)
 	if (m == selmon) { /* status is only drawn on selected monitor */
 		ww = TEXTW(xkb_layouts[xkbGlobal.group]);
 		drw_setscheme(drw, scheme[SchemeNorm]);
+
 		tw = TEXTW(stext) - lrpad / 2 + 2; /* 2px right padding */
 		drw_text(drw, m->ww - tw - stw - ww, 0, tw, bh, lrpad / 2 + 2, stext, 0);
+
 		drw_setscheme(drw, scheme[SchemeNorm]);
-		drw_text(drw, m->ww - stw, 0, ww, bh, lrpad / 2 + 2, xkb_layouts[xkbGlobal.group], 0);
+		drw_text(drw, m->ww - stw - ww, 0, ww, bh, lrpad / 2 + 2, xkb_layouts[xkbGlobal.group], 0);
 	}
 	resizebarwin(m);
 
@@ -969,7 +971,7 @@ drawbar(Monitor *m)
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
-	if ((w = m->ww - tw - stw - x) > bh) {
+	if ((w = m->ww - tw - stw - x - ww) > bh) {
 		if (m->sel) {
 			drw_setscheme(drw, scheme[m == selmon ? SchemeSel : SchemeNorm]);
 			drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
