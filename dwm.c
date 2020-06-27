@@ -2853,6 +2853,7 @@ main(int argc, char *argv[])
 #endif /* __OpenBSD__ */
 	scan();
 	run();
+	system("cd ~;  ./autostart_blocking.sh");
 	cleanup();
 	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
