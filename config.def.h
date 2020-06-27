@@ -31,17 +31,24 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class     instance  title           tags mask  isfloating  isterminal  noswallow  monitor */
-	{ "Gimp",    NULL,     NULL,           0,         1,          0,           0,        -1 },
-	{ "Firefox", NULL,     NULL,           0,         0,          0,           0,        -1 },
-	{ "St",      NULL,     NULL,           0,         0,          1,          -1,        -1 },
-	{ NULL,      NULL,     "Event Tester", 0,         1,          0,           1,        -1 }, /* xev */
+	/* class     instance  title           tags mask  isfloating  isterminal  noswallow  monitor xkb */
+	{ "Gimp",    NULL,     NULL,           0,         1,          0,           0,        -1, 0 },
+	{ "Firefox", NULL,     NULL,           0,         0,          0,           0,        -1, 0 },
+	{ "St",      NULL,     NULL,           0,         0,          1,          -1,        -1, 0 },
+	{ NULL,      NULL,     "Event Tester", 0,         1,          0,           1,        -1, 0 }, /* xev */
 };
 
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+
+/* xkb frontend */
+static const Bool showxkb         = True; /* False means no xkb layout text */
+static const char *xkb_layouts [] = {
+    "en",
+    "ru",
+};
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
