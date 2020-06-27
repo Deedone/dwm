@@ -60,6 +60,8 @@
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
+//#define LOG(...) {FILE *f = fopen("/tmp/dwm.log","a"); fprintf(f, ##__VA_ARGS__); fclose(f);}
+#define LOG(...)
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
@@ -310,6 +312,7 @@ applyrules(Client *c)
 	class    = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name  ? ch.res_name  : broken;
 
+	LOG("CLASS IS %s\n", class);
 	for (i = 0; i < LENGTH(rules); i++) {
 		r = &rules[i];
 		if ((!r->title || strstr(c->name, r->title))
@@ -457,6 +460,7 @@ void
 swallow(Client *p, Client *c)
 {
 	Client *s;
+	LOG("Swallow\n");
 
 	if (c->noswallow > 0 || c->isterminal)
 		return;
@@ -491,7 +495,7 @@ void
 unswallow(Client *c)
 {
 	c->win = c->swallowing->win;
-
+	LOG("Unswallow\n");
 	free(c->swallowing);
 	c->swallowing = NULL;
 
@@ -1174,8 +1178,11 @@ manage(Window w, XWindowAttributes *wa)
 	c->mon->sel = c;
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
-	if (term)
+	LOG("Swallow check\n");
+	if (term) {
+		LOG("Swallow check passed\n");
 		swallow(term, c);
+	}
 	focus(NULL);
 }
 
@@ -2246,16 +2253,25 @@ termforwin(const Client *w)
 	Client *c;
 	Monitor *m;
 
-	if (!w->pid || w->isterminal)
+	if (!w->pid || w->isterminal) {
+		LOG("ERR 1\n");
 		return NULL;
+	}
 
 	for (m = mons; m; m = m->next) {
 		for (c = m->clients; c; c = c->next) {
+			if (isdescprocess(c->pid, w->pid) ){
+				LOG("FOUND PARENT\n");
+				LOG("IS term %d\n", c->isterminal);
+				LOG("IS swallowing %p\n", c->swallowing);
+
+			}
 			if (c->isterminal && !c->swallowing && c->pid && isdescprocess(c->pid, w->pid))
 				return c;
 		}
 	}
 
+	LOG("ERR 2\n");
 	return NULL;
 }
 
