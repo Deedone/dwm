@@ -44,6 +44,8 @@
 #include <pango/pango.h>
 #include <X11/Xlib-xcb.h>
 #include <xcb/res.h>
+#include <xcb/res.h>
+#include <pthread.h>
 
 #include "drw.h"
 #include "util.h"
@@ -188,6 +190,7 @@ struct Systray {
 	Window win;
 	Client *icons;
 };
+pthread_mutex_t lock;
 
 /* function declarations */
 static void applyrules(Client *c);
@@ -398,9 +401,11 @@ applyrules(Client *c)
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
 				c->mon = m;
+		pthread_mutex_lock(&lock);
             if(r->xkb_layout > -1 ) {
                 c->xkb->group = r->xkb_layout;
             }
+		pthread_mutex_unlock(&lock);
 		}
 	}
 	if (ch.res_class)
@@ -1076,6 +1081,7 @@ findxkb(Window w)
     XkbInfo *xkb;
     for (xkb = xkbSaved; xkb != NULL; xkb=xkb->next) {
         if (xkb->w == w) {
+
             return xkb;
         }
     }
@@ -1378,11 +1384,15 @@ manage(Window w, XWindowAttributes *wa)
 
 	updatetitle(c);
 	/* Setting current xkb state must be before applyrules */
+	XGrabServer(dpy); /* avoid race conditions */
+	pthread_mutex_lock(&lock);
 	xkb = findxkb(c->win);
 	if (xkb == NULL) {
 		xkb = createxkb(c->win);
 	}
 	c->xkb = xkb;
+	pthread_mutex_unlock(&lock);
+	XUngrabServer(dpy);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
 		c->mon = t->mon;
 		c->tags = t->tags;
@@ -2374,6 +2384,8 @@ unmanage(Client *c, int destroyed)
 		XUngrabServer(dpy);
 	}
     else {
+	XGrabServer(dpy); /* avoid race conditions */
+	pthread_mutex_lock(&lock);
         xkb = findxkb(c->win);
         if (xkb != NULL) {
             if (xkb->prev) {
@@ -2384,6 +2396,8 @@ unmanage(Client *c, int destroyed)
             }
             free(xkb);
         }
+	pthread_mutex_unlock(&lock);
+	XUngrabServer(dpy);
     }
 	free(c);
 
@@ -3033,6 +3047,7 @@ main(int argc, char *argv[])
 		die("dwm: cannot open display");
 	if (!(xcon = XGetXCBConnection(dpy)))
 		die("dwm: cannot get xcb connection\n");
+	pthread_mutex_init(&lock, NULL);
 	checkotherwm();
 	setup();
 #ifdef __OpenBSD__
